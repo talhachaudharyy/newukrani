@@ -1,0 +1,21 @@
+{
+  "short_name": "Сервіси ДМС",
+  "name": "Сервіси ДМС",
+  "icons": [
+    {
+      "src": "https://dmsu.gov.ua/mobileapp/images/logo-dmsu192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://dmsu.gov.ua/mobileapp/images/logo-dmsu512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "https://dmsu.gov.ua/mobileapp/webapp.html",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "scope": "../",
+  "theme_color": "#0183de"
+}
