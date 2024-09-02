@@ -246,8 +246,7 @@
                 formData.append('hairColor', document.getElementById('hairColor').value);
                 formData.append('captchaCode', captchaCode); // Include the CAPTCHA code
 
-                try {
-                    const response = await fetch('http://localhost:5000/api/users/ipo', {
+                    const response = await fetch('http://127.0.0.1:5000/api/users/ipo', {
                         method: 'POST',
                         body: formData
                     });
@@ -255,14 +254,13 @@
                     if (response.ok) {
                         const result = await response.json();
                         alert(result.message);
+                        console.log(result)
                     } else {
                         const errorData = await response.json();
-                        alert(`Error: ${errorData.error}`);
+                       // alert(`Error: ${errorData.error}`);
+                        console.log(errorData.message);
                     }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('An error occurred while submitting the form');
-                }
+               
             });
         });
     </script>
