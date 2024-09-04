@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="../assets/img/favicon/apple-icon-57x57.png" sizes="57x57" type="image/png">
-    
     <title>User Registration :: State Migration Service of Ukraine</title>
     <link rel="stylesheet" href="style.css">
     <style>
@@ -68,39 +67,6 @@
             background-color: #357abd;
         }
 
-        .captcha-container {
-            margin: 15px 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .captcha-display {
-            font-size: 24px;
-            font-weight: bold;
-            color: #4a90e2;
-            background: #f0f4f8;
-            padding: 10px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            margin-bottom: 10px;
-        }
-        
-        .captcha-input {
-            width: 150px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-        
-        .captcha-refresh {
-            font-size: 14px;
-            color: #4a90e2;
-            cursor: pointer;
-            margin-top: 5px;
-        }
-
         @media (max-width: 768px) {
             .captcha-container {
                 flex-direction: column;
@@ -135,18 +101,9 @@
             button {
                 font-size: 14px;
             }
-
-            .captcha-display {
-                font-size: 18px;
-                padding: 8px 16px;
-            }
-
-            .captcha-input {
-                width: 100%;
-                font-size: 14px;
-            }
         }
     </style>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
     <h1>Registration Form</h1>
@@ -164,10 +121,10 @@
         <input type="file" id="cnicPhoto" name="cnicPhoto" accept="image/*" required>
 
         <label for="height">Height (cm):</label>
-        <input type="number" id="height" name="height" required>
+        <input type="number" id="height" name="height" required min="100" max="999" maxlength="3">
 
         <label for="weight">Weight (kg):</label>
-        <input type="number" id="weight" name="weight" required>
+        <input type="number" id="weight" name="weight" required min="1" max="999" maxlength="3">
 
         <label for="eyeColor">Eye Color:</label>
         <input type="text" id="eyeColor" name="eyeColor" required>
@@ -176,92 +133,98 @@
         <input type="text" id="address" name="address" required>
 
         <label for="phoneNumber">Phone Number:</label>
-        <input type="tel" id="phoneNumber" name="phoneNumber" required>
+        <input type="tel" id="phoneNumber" name="phoneNumber" required pattern="^\d{10}$" title="Please enter a 10-digit phone number">
 
         <label for="gmail">Gmail:</label>
-        <input type="email" id="gmail" name="gmail" required>
+        <input type="email" id="gmail" name="gmail" required pattern="[a-zA-Z0-9._%+-]+@gmail\.com$" title="Please enter a valid Gmail address">
 
-        <!-- New fields -->
-        <label for="transportNumber">Transport Number:</label>
-        <input type="text" id="transportNumber" name="transportNumber">
+        <label for="transportNumber">Passport Number:</label>
+        <input type="text" id="transportNumber" name="transportNumber" pattern="[A-Za-z]{2}\d{6}" required>
+        <span id="transportNumberError" style="color: red; display: none;">Please enter 2 Latin letters followed by 6 digits.</span>
 
         <label for="idCardNumber">ID Card Number:</label>
-        <input type="text" id="idCardNumber" name="idCardNumber">
+        <input type="text" id="idCardNumber" name="idCardNumber" maxlength="12" required>
 
         <label for="hairColor">Hair Color:</label>
         <input type="text" id="hairColor" name="hairColor">
 
-        <!-- CAPTCHA -->
-        <div class="captcha-container">
-            <div class="captcha-display" id="captchaDisplay"></div>
-            <input type="text" id="captchaInput" class="captcha-input" placeholder="Enter CAPTCHA" required>
-            <span id="captchaRefresh" class="captcha-refresh">Refresh CAPTCHA</span>
-        </div>
+        <!-- reCAPTCHA -->
+        <div class="g-recaptcha" data-sitekey="6LfAqTUqAAAAAKq3LmAvcppAWs5SaTNxd7ms9xth"></div>
 
         <button type="submit">Submit</button>
     </form>
 
     <script>
-        document.addEventListener('DOMContentLoaded', (event) => {
-            // Function to generate random CAPTCHA code
-            function generateCaptcha() {
-                return Math.floor(1000 + Math.random() * 9000); // 4-digit number
+        document.getElementById('transportNumber').addEventListener('input', function () {
+            const transportNumber = this.value;
+            const transportNumberPattern = /^[A-Za-z]{2}\d{6}$/;
+
+            if (!transportNumberPattern.test(transportNumber)) {
+                document.getElementById('transportNumberError').style.display = 'inline';
+            } else {
+                document.getElementById('transportNumberError').style.display = 'none';
             }
+        });
 
-            function setCaptcha() {
-                captchaCode = generateCaptcha();
-                document.getElementById('captchaDisplay').textContent = captchaCode;
+        document.getElementById('gmail').addEventListener('input', function (e) {
+            const gmailPattern = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+
+            if (!gmailPattern.test(this.value)) {
+                this.setCustomValidity('Please enter a valid Gmail address');
+            } else {
+                this.setCustomValidity('');
             }
+        });
 
-            let captchaCode = generateCaptcha();
-            setCaptcha();
+        document.getElementById('phoneNumber').addEventListener('input', function (e) {
+            if (this.value.length > 11) {
+                this.value = this.value.slice(0, 11); // Limits the input to 10 digits
+            }
+        });
 
-            document.getElementById('captchaRefresh').addEventListener('click', function() {
-                setCaptcha();
+        document.getElementById('weight').addEventListener('input', function (e) {
+            if (this.value.length > 3) {
+                this.value = this.value.slice(0, 3); // Limits the input to 3 digits
+            }
+        });
+
+        document.getElementById('height').addEventListener('input', function (e) {
+            if (this.value.length > 3) {
+                this.value = this.value.slice(0, 3); // Limits the input to 3 digits
+            }
+        });
+
+        document.getElementById('registrationForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const formData = new FormData();
+            formData.append('firstName', document.getElementById('firstName').value);
+            formData.append('middleName', document.getElementById('middleName').value);
+            formData.append('lastName', document.getElementById('lastName').value);
+            formData.append('cnicPhoto', document.getElementById('cnicPhoto').files[0]);
+            formData.append('height', document.getElementById('height').value);
+            formData.append('weight', document.getElementById('weight').value);
+            formData.append('eyeColor', document.getElementById('eyeColor').value);
+            formData.append('address', document.getElementById('address').value);
+            formData.append('phoneNumber', document.getElementById('phoneNumber').value);
+            formData.append('gmail', document.getElementById('gmail').value);
+            formData.append('transportNumber', document.getElementById('transportNumber').value);
+            formData.append('idCardNumber', document.getElementById('idCardNumber').value);
+            formData.append('hairColor', document.getElementById('hairColor').value);
+            formData.append('g-recaptcha-response', grecaptcha.getResponse()); // Include reCAPTCHA response
+
+            const response = await fetch('http://127.0.0.1:5000/api/users/ipo', {
+                method: 'POST',
+                body: formData
             });
 
-            document.getElementById('registrationForm').addEventListener('submit', async function(event) {
-                event.preventDefault();
-
-                const enteredCaptcha = document.getElementById('captchaInput').value;
-
-                if (parseInt(enteredCaptcha) !== captchaCode) {
-                    alert('CAPTCHA does not match');
-                    return;
-                }
-
-                const formData = new FormData();
-                formData.append('firstName', document.getElementById('firstName').value);
-                formData.append('middleName', document.getElementById('middleName').value);
-                formData.append('lastName', document.getElementById('lastName').value);
-                formData.append('cnicPhoto', document.getElementById('cnicPhoto').files[0]);
-                formData.append('height', document.getElementById('height').value);
-                formData.append('weight', document.getElementById('weight').value);
-                formData.append('eyeColor', document.getElementById('eyeColor').value);
-                formData.append('address', document.getElementById('address').value);
-                formData.append('phoneNumber', document.getElementById('phoneNumber').value);
-                formData.append('gmail', document.getElementById('gmail').value);
-                formData.append('transportNumber', document.getElementById('transportNumber').value);
-                formData.append('idCardNumber', document.getElementById('idCardNumber').value);
-                formData.append('hairColor', document.getElementById('hairColor').value);
-                formData.append('captchaCode', captchaCode); // Include the CAPTCHA code
-
-                    const response = await fetch('http://127.0.0.1:5000/api/users/ipo', {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    if (response.ok) {
-                        const result = await response.json();
-                        alert(result.message);
-                        console.log(result)
-                    } else {
-                        const errorData = await response.json();
-                       // alert(`Error: ${errorData.error}`);
-                        console.log(errorData.message);
-                    }
-               
-            });
+            if (response.ok) {
+                const result = await response.json();
+                alert(result.message);
+            } else {
+                const errorData = await response.json();
+                alert(`Error: ${errorData.error}`);
+            }
         });
     </script>
 </body>
